@@ -19,6 +19,7 @@ This project demonstrates a simple **Microservices Architecture** where an API G
 | 📅 Academic Year | Year 4 \| Semester 1 \| Practical 3 |
 | 🔌 Gateway Port | `8000` |
 | 🎓 Student Service Port | `8001` |
+| 📚 Course Service Port | `8002` |
 
 ---
 
@@ -31,13 +32,16 @@ Client (Browser / App)
 ┌───────────────────┐
 │   API Gateway     │  :8000
 │   (gateway/)      │
-└───────┬───────────┘
-        │  HTTP Forward (HTTPx)
-        ▼
-┌───────────────────┐
-│  Student Service  │  :8001
-│ (student-service/)│
-└───────────────────┘
+└────────┬──────────┘
+         │  HTTP Forward (HTTPx)
+    ┌────┴────┐
+    │         │
+    ▼         ▼
+┌──────────┐  ┌──────────────┐
+│ Student  │  │   Course     │
+│ Service  │  │   Service    │
+│  :8001   │  │    :8002     │
+└──────────┘  └──────────────┘
 ```
 
 ---
@@ -62,6 +66,12 @@ microservices-fastapi/
 │   └── main.py              ← API Gateway (Port 8000)
 │
 ├── student-service/
+│   ├── main.py              ← FastAPI App Entry Point
+│   ├── models.py            ← Pydantic Models
+│   ├── service.py           ← Business Logic Layer
+│   └── data_service.py      ← In-Memory Data Store
+│
+├── course-service/
 │   ├── main.py              ← FastAPI App Entry Point
 │   ├── models.py            ← Pydantic Models
 │   ├── service.py           ← Business Logic Layer
@@ -116,7 +126,16 @@ uvicorn main:app --reload --port 8001
 
 📄 Swagger UI → [http://localhost:8001/docs](http://localhost:8001/docs)
 
-### Terminal 2 — Start API Gateway
+### Terminal 2 — Start Course Microservice
+
+```bash
+cd course-service
+uvicorn main:app --reload --port 8002
+```
+
+📄 Swagger UI → [http://localhost:8002/docs](http://localhost:8002/docs)
+
+### Terminal 3 — Start API Gateway
 
 ```bash
 cd gateway
@@ -129,6 +148,8 @@ uvicorn main:app --reload --port 8000
 
 ## 🧪 Testing the API
 
+### 🎓 Student Endpoints
+
 | Method | Endpoint | Description |
 |---|---|---|
 | `GET` | `/gateway/students` | List all students *(via Gateway)* |
@@ -136,6 +157,16 @@ uvicorn main:app --reload --port 8000
 | `POST` | `/gateway/students` | Create a new student record |
 | `PUT` | `/gateway/students/{id}` | Update an existing student |
 | `DELETE` | `/gateway/students/{id}` | Delete a student record |
+
+### 📚 Course Endpoints
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/gateway/courses` | List all courses *(via Gateway)* |
+| `GET` | `/api/courses` | Direct access to Course Service |
+| `POST` | `/gateway/courses` | Create a new course record |
+| `PUT` | `/gateway/courses/{id}` | Update an existing course |
+| `DELETE` | `/gateway/courses/{id}` | Delete a course record |
 
 > ✅ All endpoints can be tested interactively via **Swagger UI**
 
